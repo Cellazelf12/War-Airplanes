@@ -1,58 +1,100 @@
+let player = {
+    avion: new Image(),
+    indexAvion: 1,
+    x: 0,
+    y: 0,
+    avionSeleccionado: parseInt(localStorage.getItem("avionActual")) || 1,
+    radio: 181.5
+}
 
-let indexAvion = 1;
+let variables = {
+    randomX: 0,
+    randomY: 0,
+    fps: 0,
+    lastTime: 0,
+    prevTime: 0,
+    frames: 0,
+    background_anim: 0
+};
 
-let randomX;
-let randomY;
+let stats = {
+    monedas: parseInt(localStorage.getItem("monedas")) || 0,
+};
 
-let puntos = 0;
-let monedas = 0;
+let gameObjects = {
+    monedasEnJuego: [],
+    enemigosEnJuego: [],
+};
 
-let monedasEnJuego = [];
-let avionSeleccionado = 1;
+let moneda = {
+    indexCoin: 1,
+    coin: new Image()
+}
 
-let sky = document.getElementById("js-cielo");
-let style = document.getElementById("style");
-let avion = document.getElementById("avion");
-let contadorMonedas = document.getElementById("monedas");
-let player = document.getElementById("player");
+const constants = {
+    canvas: document.getElementById("game-canvas"),
+    ctx: null,
 
-const DAY_STYLE = "styles/day.css";
-const NIGHT_STYLE = "styles/night.css";
+    DAY_BACKGROUND: new Image(),
+    NIGHT_BACKGROUND: new Image(),
+    TIME_BETWEEN_FONDOS: getMilliseconds("Minutes", 1),
+    TIME_BETWEEN_ENEMIES: getMilliseconds("Seconds", 5),
 
-let posicionHorizontal = 0;
+    WIDTH: window.innerWidth,
+    HEIGHT: window.innerHeight
+};
 
-let posicionVertical = 0;
-
-const TIME_BETWEEN_FONDOS = getMilliseconds("Minutes", 1);
-
-const WIDTH = window.outerWidth;
-const HEIGHT = window.outerHeight;
 
 window.addEventListener("load", init);
 
-function loadStats() {
-    monedas = parseInt(localStorage.getItem("monedas")) || 0;
-    avionesComprados = JSON.parse(localStorage.getItem("avionesComprados")) || [1];
-    avionSeleccionado = parseInt(localStorage.getItem("avionActual")) || 1;
+// Generar una cantidad de números aleatorios al principio del juego
+let randomNumbers = [];
 
-    document.getElementById("monedas").innerText = monedas;
-}
+// Contador para saber qué número aleatorio usar
+let randomCounter = 0;
 
-function init() {
-    loadStats();
+async function init() {
 
-    moveHorizontally(WIDTH / 2);
-    moveVertically(HEIGHT / 2);
+    for (let i = 0; i < 1000; i++) {
+        randomNumbers.push({
+            x: getRandomNumber(1, constants.WIDTH),
+            y: getRandomNumber(10, constants.HEIGHT / 2)
+        });
+    }
+
+    const path = "../assets/sprites/backgrounds";
+
+    constants.DAY_BACKGROUND.src = `${path}/background.png`;
+
+    constants.NIGHT_BACKGROUND.src = `${path}/backgroundNight.png`;
+
+    lastTime = performance.now();
+
+    //Optimización del canvas
+    constants.ctx = constants.canvas.getContext('2d', { alpha: false, desynchronized: true });
+    constants.ctx.imageSmoothingEnabled = false;
+
+    player.avion.width = 256;
+    player.avion.height = 256;
+    moneda.coin.src = "assets/sprites/coin/1.png";
+
+    constants.canvas.width = constants.WIDTH;
+    constants.canvas.height = constants.HEIGHT;
+
+    moveHorizontally(constants.WIDTH / 2);
+    moveVertically(constants.HEIGHT / 2);
 
     window.addEventListener("keydown", handleKeyDown);
-    window.requestAnimationFrame(gameLoop);
-    window.setInterval(() => {
-        swapStyleSheet(style.getAttribute("href") === DAY_STYLE ? NIGHT_STYLE : DAY_STYLE);
-    }, TIME_BETWEEN_FONDOS);
-}
 
-function swapStyleSheet(sheet) {
-    style.setAttribute("href", sheet);
+    window.setInterval(async function () {
+
+        moneda.coin.src = `assets/sprites/coin/${moneda.indexCoin}.png`;
+
+        moneda.indexCoin = (moneda.indexCoin + 2) % 8;
+
+    }, (variables.frames / (performance.now() - variables.lastTime) * 1000).toFixed());
+
+    window.requestAnimationFrame(gameLoop);
 }
 
 function handleKeyDown(event) {
@@ -80,110 +122,113 @@ function handleKeyDown(event) {
     }
 }
 
-function updateAvionSprite() {
-    avion.src = `assets/sprites/airplanes/${avionSeleccionado}/${indexAvion}.png`;
+function animate() {
+    player.avion.src = `assets/sprites/airplanes/${player.avionSeleccionado}/${player.indexAvion}.png`;
 
-    indexAvion = (indexAvion + 2) % 4;
-}
-
-function updateMonedasText() {
-    contadorMonedas.innerText = monedas;
+    player.indexAvion = (player.indexAvion + 2) % 4;
 }
 
 function gameLoop() {
 
-    updateAvionSprite();
+    variables.frames++;
+    const currentTime = performance.now();
 
-    updateMonedasText();
-
+    animate();
     coinLoop();
+    draw();
+
+    constants.ctx.fillText("FPS: " + (variables.frames / (currentTime - variables.lastTime) * 1000).toFixed(), 10, 60);
+
+    if (currentTime - variables.lastTime >= 1000) {
+        variables.lastTime = currentTime;
+        variables.frames = 0;
+    }
 
     window.requestAnimationFrame(gameLoop);
 }
 
-function createCoin() {
-    let coin = document.createElement('img');
-    coin.src = "assets/sprites/coin/coin.png";
-    coin.style.position = "absolute";
-    coin.style.transition = "0.5s transform";
-    let randomY = Math.floor((Math.random() * HEIGHT / 2) + 1);
-    let randomX = Math.floor((Math.random() * WIDTH) + 1);
-    coin.style.transform = `translate(${randomX}px, ${randomY}px)`;
-    return coin;
-}
-
 function coinLoop() {
-    if (monedasEnJuego.length >= 5) {
+    if (gameObjects.monedasEnJuego.length >= 5) {
         return;
     }
-
-    let coin = createCoin();
-    sky.append(coin);
-    monedasEnJuego.push(coin);
-    localStorage.setItem("monedas", monedas);
 }
 
-function detectCollision(el1, el2) {
-    const rect1 = el1.getBoundingClientRect();
-    const rect2 = el2.getBoundingClientRect();
-    return (
-        rect1.x < rect2.x + rect2.width &&
-        rect1.x + rect1.width > rect2.x &&
-        rect1.y < rect2.y + rect2.height &&
-        rect1.y + rect1.height > rect2.y
-    );
-}
+function checkCollision(obj1, obj2) {
+    // Calcula la distancia entre los centros de ambos objetos
+    let distance = Math.sqrt(Math.pow(obj1.x - obj2.x, 2) + Math.pow(obj1.y - obj2.y, 2));
 
+    return (distance < (obj1.radio + obj2.radio));
+}
 
 function moveVertically(i) {
-    let vTop, vNum;
-    vTop = player.offsetTop;
-    vNum = parseInt(vTop);
-    vNum += i;
+    player.y += i;
+    player.y = Math.min(Math.max(player.y, 0), constants.HEIGHT - player.avion.height);
 
-    if (vNum + player.offsetHeight <= HEIGHT && vNum >= 0) {
-        player.style.top = `${vNum}px`;
-    }
-
-    borrarMonedas(true);
+    borrarMonedas();
 }
 
 function moveHorizontally(i) {
-    let hLeft, hNum;
-    hLeft = player.offsetLeft;
-    hNum = parseInt(hLeft);
-    hNum += i;
+    player.x += i;
+    player.x = Math.min(Math.max(player.x, 0), constants.WIDTH - player.avion.width);
 
-    if (hNum + player.offsetWidth <= WIDTH && hNum >= 0) {
-        player.style.left = `${hNum}px`;
-    }
-
-    borrarMonedas(true);
+    borrarMonedas();
 }
 
-function borrarMonedas(agregar) {
-    monedasEnJuego.forEach(coin => {
-        if (detectCollision(coin, avion)) {
-            sky.removeChild(coin);
-            const index = monedasEnJuego.indexOf(coin);
+function borrarMonedas() {
+    gameObjects.monedasEnJuego.forEach(coin => {
+        if (checkCollision(player, coin)) {
+            const index = gameObjects.monedasEnJuego.indexOf(coin);
             if (index > -1) {
-                monedasEnJuego.splice(index, 1);
+                //Reasignando una posición nueva para reutilizar el objeto de moneda y no crear uno nuevo.
+                let randomNum = randomNumbers[randomCounter];
+                gameObjects.monedasEnJuego[index] = { x: randomNum.x, y: randomNum.y, radio: 21 };
+                randomCounter++;
+                if (randomCounter >= randomNumbers.length) {
+                    randomCounter = 0;
+                }
             }
-            if (agregar) {
-                monedas++;
-            }
+            stats.monedas++;
+            localStorage.setItem("monedas", stats.monedas);
         }
     });
 }
 
-function getMilliseconds(timeunit, time) {
-    let response = 0;
+function draw() {
+    constants.ctx.clearRect(0, 0, constants.WIDTH, constants.HEIGHT);
 
-    if (timeunit === "Seconds") {
-        response = (time * 1000);
-    } else if (timeunit === "Minutes") {
-        response = (time * 60000);
+    // Dibuja la imagen del fondo
+    constants.ctx.drawImage(constants.DAY_BACKGROUND, 0, variables.background_anim);
+    constants.ctx.drawImage(constants.DAY_BACKGROUND, 0, variables.background_anim - constants.DAY_BACKGROUND.height);
+
+    variables.background_anim++;
+    if (variables.background_anim >= constants.DAY_BACKGROUND.height) {
+        variables.background_anim = 0;
     }
 
-    return response;
+    constants.ctx.drawImage(player.avion, player.x, player.y);
+
+    gameObjects.monedasEnJuego.forEach(coin => {
+        constants.ctx.drawImage(moneda.coin, coin.x, coin.y);
+    });
+
+    constants.ctx.fillStyle = "#ff0000";
+    constants.ctx.fillText("Monedas: " + stats.monedas, 10, 40);
+}
+
+function getMilliseconds(unit, value) {
+    switch (unit) {
+        case "Seconds":
+            return value * 1000;
+        case "Minutes":
+            return value * 1000 * 60;
+        case "Hours":
+            return value * 1000 * 60 * 60;
+        default:
+            return value;
+    }
+}
+
+// Función para generar números aleatorios dentro de un rango
+function getRandomNumber(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
