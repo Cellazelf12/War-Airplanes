@@ -61,7 +61,7 @@ function handleKeyDown(event) {
 
     switch (event.code) {
         case "Escape":
-            window.location.href = "menu.html";
+            window.location.href = "index.html";
             break;
     }
 }

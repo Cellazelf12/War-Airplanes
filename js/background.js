@@ -20,7 +20,22 @@ function init() {
 
     window.addEventListener("click", handleButton);
 
+    window.addEventListener("keydown", handleKeyDown);
+
     window.requestAnimationFrame(drawBackground);
+}
+
+//Función que analiza el evento de key down e identifica cual tecla fue presionada.
+function handleKeyDown(event) {
+    if (event.isComputing) {
+        return;
+    }
+
+    switch (event.code) {
+        case "Escape":
+            window.location.href = "index.html";
+            break;
+    }
 }
 
 //Defino segun el boton el fondo
@@ -41,7 +56,7 @@ function handleButton(button) {
 
 //Evalua si el boton clickeado es el mismo si tiene elegido, si es el caso, corta la función, sino, continua.
 function setBackground(background) {
-    if(BACKGROUND.src == `${path}/${background}.png`){
+    if (BACKGROUND.src == `${path}/${background}.png`) {
         return;
     }
     localStorage.setItem("background", background);
