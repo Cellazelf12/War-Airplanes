@@ -46,10 +46,26 @@ function init() {
         });
     });
 
+    window.addEventListener("keydown", handleKeyDown);
+
     // Inicia la animación
     window.requestAnimationFrame(animate);
 
 };
+
+//Función que analiza el evento de key down e identifica cual tecla fue presionada.
+function handleKeyDown(event) {
+    if (event.isComputing) {
+        return;
+    }
+
+    switch (event.code) {
+        case "Escape":
+            window.location.href = "menu.html";
+            break;
+    }
+}
+
 
 // Función que anima los aviones
 function animate() {

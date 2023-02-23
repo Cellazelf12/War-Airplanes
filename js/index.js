@@ -127,6 +127,9 @@ function handleKeyDown(event) {
         case "KeyW":
             moveVertically(-10);
             break;
+        case "Escape":
+            window.location.href = "menu.html";
+            break;
     }
 }
 

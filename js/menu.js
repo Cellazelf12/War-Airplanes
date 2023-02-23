@@ -22,7 +22,22 @@ function init() {
 
     loadFlag();
 
+    window.addEventListener("keydown", handleKeyDown);
+
     window.requestAnimationFrame(drawBackground);
+}
+
+//Función que analiza el evento de key down e identifica cual tecla fue presionada.
+function handleKeyDown(event) {
+    if (event.isComputing) {
+        return;
+    }
+
+    switch (event.code) {
+        case "Escape":
+            window.location.href = "menu.html";
+            break;
+    }
 }
 
 function handleButton(button) {
@@ -32,17 +47,17 @@ function handleButton(button) {
         case "Empezar":
             window.location.href = "juego.html";
             break;
-        case "Aviones":
-            window.location.href = "customization.html";
-            break;
-        case "Backgrounds":
-
-            break;
         case "Opciones":
             window.location.href = "opciones.html";
             break;
         case "Acerca De":
             window.location.href = "https://github.com/Cellazelf12/War-Airplanes";
+            break;
+        case "Aviones":
+            window.location.href = "customization.html";
+            break;
+        case "Backgrounds":
+            window.location.href = "background.html";
             break;
         default:
             break;
@@ -65,7 +80,7 @@ async function loadFlag() {
     await fetch("https://ipinfo.io/json?token=ec6c8a3b6fd206").then(
         (response) => response.json()
     ).then(
-        (jsonResponse) => flagCache = "https://raw.githubusercontent.com/cristiroma/countries/master/data/flags/PNG-128/" + jsonResponse.country + "-128.png" 
+        (jsonResponse) => flagCache = "https://raw.githubusercontent.com/cristiroma/countries/master/data/flags/PNG-128/" + jsonResponse.country + "-128.png"
     ).finally(
         (finallyresponse) => {
 
