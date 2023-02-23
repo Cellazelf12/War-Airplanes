@@ -1,6 +1,12 @@
 // Declaración de una variable para almacenar el índice del avión seleccionado, util para la animación del mismo.
 let indexAvion = 1;
 
+const canvas = document.getElementById('background-canvas');
+const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
+let background_anim = 0;
+
+let BACKGROUND = new Image();
+
 // Objeto que almacena las estadísticas del juego, que se obtienen del LocalStorage.
 let stats = {
     monedas: parseInt(localStorage.getItem("monedas")) || 0,
@@ -19,6 +25,16 @@ window.addEventListener("load", init);
 
 // Funcion que inicializa todo el menu.
 function init() {
+
+    canvas.height = window.innerHeight;
+    canvas.width = window.innerWidth;
+
+    const path = "../assets/sprites/backgrounds";
+
+    const background = localStorage.getItem("background") || "background1";
+
+    BACKGROUND.src = `${path}/${background}.png`;
+
     // Obtiene todos los botones cuyo id empiece con 'btn-'
     let buttons = [...document.querySelectorAll("[id^=btn-]")];
 
@@ -37,6 +53,7 @@ function init() {
 
 // Función que anima los aviones
 function animate() {
+    drawBackground();
 
     // Por cada slide, verifica si está seleccionado y actualiza la imagen del avión correspondiente
     slides.forEach(slide => {
@@ -90,7 +107,7 @@ function handleEvent(element) {
             saveStat("avionActual", stats.avionSeleccionado);
             element.innerText = "Seleccionado";
         }
-    // Si el precio es menor o igual a cero, es decir, GRATIS, no se procede a restar monedas al jugador, en cambio solo se añade a los aviones comprados.
+        // Si el precio es menor o igual a cero, es decir, GRATIS, no se procede a restar monedas al jugador, en cambio solo se añade a los aviones comprados.
     } else if (precio <= 0) {
         stats.avionesComprados.push(nro);
         saveStat("avionesComprados", stats.avionesComprados);
@@ -110,9 +127,26 @@ function handleEvent(element) {
                 "You don't have enough coins.",
                 `You need: ${faltante} coins`,
                 'error'
-              )
+            )
             return;
         }
+    }
+}
+
+//Funcion que dibuja el fondo en el canvas.
+function drawBackground() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.drawImage(BACKGROUND, 0, background_anim, canvas.width, canvas.height);
+    ctx.drawImage(BACKGROUND, 0, background_anim - canvas.height, canvas.width, canvas.height);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = '20px san-serif';
+    ctx.fillText(stats.monedas, 50, 30, 70);
+
+    background_anim += 1; // Velocidad de movimiento
+    if (background_anim >= canvas.height) {
+        background_anim = 0;
     }
 }
 

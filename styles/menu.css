@@ -8,13 +8,38 @@ button {
     cursor: pointer;
 }
 
+#background-canvas {
+    background: url("../assets/sprites/backgrounds/background1.png") repeat-y;
+    background-size: cover;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+}
+
+
 /* Estilos para el título */
 h1 {
     font-size: 3em;
     text-align: center;
     margin-top: 50px;
+    position: absolute;
+    top: 20%;
+    left: 42%;
+    font-family: 'Anton', sans-serif;
 }
 
 div {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     text-align: center;
+}
+
+#flag {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 64;
+    height: 64;
 }

@@ -7,6 +7,16 @@ body {
     font-family: "Helvetica", sans-serif;
 }
 
+button {
+    font-size: 1.5em;
+    margin: 5px;
+    padding: 5px 5px;
+    border-radius: 10px;
+    background-color: #2e7d32;
+    color: white;
+    cursor: pointer;
+}
+
 img {
     max-width: 100%;
 }
@@ -19,26 +29,12 @@ img {
     text-align: center;
 }
 
-
-@keyframes bgScroll {
-    0% {
-        background-position: 0 0;
-    }
-
-    100% {
-        background-position: 0 1500%;
-    }
-}
-
-.fondo {
-    background: url("../assets/sprites/backgrounds/background.png") repeat-y;
-    -webkit-animation: bgScroll 600s linear infinite;
-    animation: bgScroll 600s linear infinite;
-    animation-direction: reverse;
-    height: 100%;
-    width: 100%;
+#background-canvas {
+    background: url("../assets/sprites/backgrounds/background1.png") repeat-y;
     background-size: cover;
-    position: relative;
+    position: absolute;
+    top: 0px;
+    left: 0px;
 }
 
 .menu {
@@ -60,7 +56,7 @@ img {
 }
 
 .menu label:hover {
-    background: red;
+    background: rgb(255, 0, 0);
 }
 
 .slide {
@@ -74,6 +70,9 @@ img {
     background-size: cover;
     background-position: 50% 50%;
     transition: left 0s 0.50s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 [id^=slide]:checked+.slide {
@@ -82,18 +81,11 @@ img {
     transition: left 0.55s ease-out;
 }
 
-a{
+a {
     background-color: white;
     color: black;
 }
 
-#hud{
+#hud {
     position: fixed;
-}
-
-#monedaicono, #monedas {float:left; display:inline}
-
-#monedas{
-    background-color: white;
-    text-align: center;
 }
