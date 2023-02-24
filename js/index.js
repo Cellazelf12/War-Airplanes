@@ -66,10 +66,6 @@ function init() {
     constants.BACKGROUND.src = `${path}/${background}.png`;
     //
 
-    //Variable que sirve para calcular los FPS
-    lastTime = performance.now();
-    //
-
     //Optimización del canvas
     constants.ctx = constants.canvas.getContext('2d', { desynchronized: true });
     constants.ctx.imageSmoothingEnabled = false;
